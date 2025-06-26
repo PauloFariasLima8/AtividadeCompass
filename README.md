@@ -10,26 +10,70 @@
 
 ---
 
-## Passo 1: Criar um Classic Load Balancer (CLB)
+
+## Passo 1: Criação da VPC.
+
+1. No Console AWS, vá para **VPC > Criar VPC.**
+
+**Configurações da VPC**
+ -Recursos a Serem criados: VPC e muito mais.
+2. **Nome:** `MyVpc02`
+3. **Bloco CIDR IPv4:** `10.0.0.0/16`
+4. **Bloco CIDR Ipv6:** `Nenhum`
+5. **Locação:** `Padrão`.
+6. **Disponibilidade AZ:** `2`
+7. **Redes:** `Duas Publica e Duas Privada`
+8. **Gateways NAT (USD):** `1 por AZ`
+9. **Endpoint da VPC:** `Gateway do S3`
+10. **Opções de DNS:** `habilitar DNS e Resolução de DNS`
+**>Criar VPC.**
+
+## Passo 2: Criar Subredes.
+Para o AutoScaling e Loadbalancer serão criadas duas subredes com a seguinte configuração.
+1. **Nome:** `MyPublicSubRed`
+2. **VPC:** `MyVPC`
+3. **Zona:** `Seleciona 2, uma em A outra em B`
+4. **Bloco CIDR da VPC:** `10.0.0.0/16`
+5. **Bloco CIDR subrede:** `10.0.1.0/16`
+**>Adicionar NovaRede.**
+1. **Nome:** `MyPublicSubRed02`
+2. **VPC:** `MyVPC`
+3. **Zona:** `Seleciona 2, uma em A outra em B`
+4. **Bloco CIDR da VPC:** `10.0.0.0/16`
+5. **Bloco CIDR subrede:** `10.0.2.0/16`
+6. **>Adicionar Criar.**
+7. 
+**>Criar Subrede.**
+
+## Passo 4: Criar InternetGateway
+**>Menu>VPC>Gateways da Internet> Criar Gateway.**
+1. **Nome:** `MyGateway`
+2. **>Criar Gateway.**
+3. **Depois de criar o Gateway é necessário associar a VPC em >Selecionar>Ações> Associar a VPC**.
+
+## Passo 3: Criar o Load Balancer (CLB)
 
 O Load Balancer distribui o tráfego entre as instâncias do Auto Scaling.
 
 1. No Console AWS, vá para **EC2 > Load Balancers > Create Load Balancer**
-2. Escolha **Classic Load Balancer**
+2. Escolha **Application Load Balancer**
 3. Configuração básica:
-   - **Nome:** `ASG-Test-LB`
-   - **VPC/Sub-redes:** Escolha a mesma VPC e sub-redes onde suas instâncias estarão.
+   - **Nome:** `MyLoadBalancer`
+   - **Esquema:** `Voltado para Internet`
+   - ***IP*: `Ipv4`
+   - **Mapeamento de Redes/VPC/Sub-redes:** Escolha a mesma VPC e sub-redes onde suas instâncias estarão. 
+   Aqui no caso a vpc foi criada durante o processo, na AWS tem a opção de criar vpc caso não tenha sido criada uma e não opte por usar a padrão. Modelo de VPC criada no processo no passo 2.
 4. Configurar listeners:
    - Porta 80 (HTTP) → Mantenha o padrão.
 5. Configurar Health Check:
    - **Path:** `/index.html` (para verificar se a instância está saudável).
 6. Adicionar Security Group:
-   - Libere HTTP (80) e SSH (22) se necessário.
+   - Libere HTTP (80) e SSH (22).
 7. Clique em **Create** e aguarde a criação.
 
 ---
 
-## Passo 2: Criar um Launch Template (Modelo de Instância)
+## Passo 4: Criar um Launch Template (Modelo de Instância)
 
 O Launch Template define qual AMI (imagem da máquina) será usada no Auto Scaling.
 
@@ -55,7 +99,7 @@ O Launch Template define qual AMI (imagem da máquina) será usada no Auto Scali
 
 ---
 
-## Passo 3: Criar o Auto Scaling Group (ASG)
+## Passo 5: Criar o Auto Scaling Group (ASG)
 
 O ASG gerencia a escala automática das instâncias.
 
@@ -77,7 +121,7 @@ O ASG gerencia a escala automática das instâncias.
 
 ---
 
-## Passo 4: Criar um Endpoint de Teste para Simular Carga
+## Passo 6: Criar um Endpoint de Teste para Simular Carga
 
 Vamos adicionar um script que simula processamento pesado para ativar o Auto Scaling.
 
@@ -118,7 +162,7 @@ Vamos adicionar um script que simula processamento pesado para ativar o Auto Sca
 
 ---
 
-## Passo 5: Testar o Auto Scaling Gerando Carga
+## Passo 7: Testar o Auto Scaling Gerando Carga
 
 Agora vamos forçar o ASG a escalar.
 
@@ -137,7 +181,7 @@ Agora vamos forçar o ASG a escalar.
     ```
     > Isso envia 50 requisições concorrentes por 5 minutos.
 
-### Opção 2: Usando stress (Dentro da Instância)
+### Opção 8: Usando stress (Dentro da Instância)
 
 1. Instale stress:
 
